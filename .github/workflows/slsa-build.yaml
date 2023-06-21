@@ -7,6 +7,8 @@ on:
 
 jobs:
   build:
+    runs-on: ubuntu-latest
+    
     outputs:
       artifacts: ${{ steps.build.outputs.artifacts }}
       hashes: ${{ steps.hash.outputs.hashes }}
