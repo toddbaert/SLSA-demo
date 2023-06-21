@@ -8,7 +8,6 @@ on:
 jobs:
   build:
     runs-on: ubuntu-latest
-    
     outputs:
       artifacts: ${{ steps.build.outputs.artifacts }}
       hashes: ${{ steps.hash.outputs.hashes }}
@@ -16,6 +15,13 @@ jobs:
     steps:
       - name: Checkout repository
         uses: actions/checkout@2541b1294d2704b0964813337f33b291d3f8596b # tag=v3
+
+      - uses: actions/checkout@96f53100ba2a5449eb71d2e6604bbcd94b9449b5
+      - name: Set up JDK 8
+        uses: actions/setup-java@45058d7f99afcd22834b58fde7cbfb7075eb48a2
+        with:
+          java-version: '8'
+          distribution: 'temurin'
 
       - name: Build using maven
         id: build
