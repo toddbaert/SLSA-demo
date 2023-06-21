@@ -7,6 +7,7 @@ import org.springframework.boot.autoconfigure.SpringBootApplication;
 public class SlsaApplication {
 
 	public static void main(String[] args) {
+		System.out.println("Hello SLSA!");
 		SpringApplication.run(SlsaApplication.class, args);
 	}
 
