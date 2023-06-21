@@ -1,0 +1,46 @@
+on:
+  push:
+    branches: [ main ]
+
+jobs:
+  build:
+    outputs:
+      artifacts: ${{ steps.build.outputs.artifacts }}
+      hashes: ${{ steps.hash.outputs.hashes }}
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@2541b1294d2704b0964813337f33b291d3f8596b # tag=v3
+
+      - name: Build using maven
+        id: build
+        run: |
+          # Your normal build workflow targets here
+          mvn clean package
+
+          # Save the location of the maven output files for easier reference
+          ARTIFACT_PATTERN=./target/$(mvn help:evaluate -Dexpression=project.artifactId -q -DforceStdout)-$(mvn help:evaluate -Dexpression=project.version -q -DforceStdout)*.jar
+          echo "artifact_pattern=$ARTIFACT_PATTERN" >> "$GITHUB_OUTPUT"
+
+      - name: Generate subject
+        id: hash
+        run: |
+          echo "hashes=$(sha256sum ${{ steps.build.outputs.artifact_pattern }} | base64 -w0)" >> "$GITHUB_OUTPUT"
+
+      - name: Upload build artifacts
+        uses: actions/upload-artifact@3cea5372237819ed00197afe530f5a7ea3e805c8 # tag=v3
+        with:
+          name: maven-build-outputs
+          path: ${{ steps.build.outputs.artifact_pattern }}
+          if-no-files-found: error
+
+  provenance:
+    needs: [build]
+    permissions:
+      actions: read # To read the workflow path.
+      id-token: write # To sign the provenance.
+      contents: write # To add assets to a release.
+    uses: slsa-framework/slsa-github-generator/.github/workflows/generator_generic_slsa3.yml@v1.7.0
+    with:
+      base64-subjects: "${{ needs.build.outputs.hashes }}"
+      upload-assets: true # Optional: Upload to a new release
